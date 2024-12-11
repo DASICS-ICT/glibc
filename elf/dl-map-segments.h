@@ -113,15 +113,12 @@ _dl_map_segments (struct link_map *l, int fd,
             __glibc_unlikely(dasics_flag == 2) || \
              __glibc_unlikely(dasics_flag == 3))
       {
-        // if (__glibc_unlikely(dasics_flag == 3) && !strcmp(get_real_name(l->l_name), "libc.so.6"))
-        // {
-        //   goto map_trust_only;
-        // }
 
         goto no_dasics;
       }
         
       
+
       
       if (is_trust_lib(get_real_name(l->l_name)))
       {

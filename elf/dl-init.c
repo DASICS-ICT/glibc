@@ -157,7 +157,8 @@ jump:
       gotplt[2] = i->plt_start;
     }
   }
-ret:
+ret: 
+ ;
 #ifndef HAVE_INLINED_SYSCALLS
   /* Finished starting up.  */
   _dl_starting_up = 0;
