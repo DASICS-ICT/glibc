@@ -31,6 +31,7 @@
 
 #include <dl-dst.h>
 #include <dl-load.h>
+#include <dl-dasics.h>
 
 /* Whether an shared object references one or more auxiliary objects
    is signaled by the AUXTAG entry in l_info.  */
@@ -234,7 +235,8 @@ _dl_map_object_deps (struct link_map *map,
 		extern unsigned long dasics_flag;
 
 		// if we are map a untrusted lib copy, we will give up untrusted lib
-		if (__glibc_unlikely(dasics_flag == 2))
+		if (__glibc_unlikely(dasics_flag == DASICS_MAP_UNTRUSTED_COPY) || \
+			__glibc_unlikely(dasics_flag == DASICS_MAP_TRUSTED_COPY))
 		  {
 			if (!is_trust_lib(get_real_name(name)))
 			{

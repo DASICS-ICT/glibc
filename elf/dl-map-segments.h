@@ -18,6 +18,7 @@
    <https://www.gnu.org/licenses/>.  */
 
 #include <dl-load.h>
+#include <dl-dasics.h>
 
 /* Map a segment and align it properly.  */
 
@@ -109,11 +110,10 @@ _dl_map_segments (struct link_map *l, int fd,
       //     goto map_trust_only;
       //   }
 
-      if (__glibc_likely(dasics_flag == 0) || \
-            __glibc_unlikely(dasics_flag == 2) || \
-             __glibc_unlikely(dasics_flag == 3))
+      if (__glibc_likely(dasics_flag == NO_DASICS) || \
+            __glibc_unlikely(dasics_flag == DASICS_MAP_UNTRUSTED_COPY) || \
+             __glibc_unlikely(dasics_flag == DASICS_MAP_ALL_UNTRUSTED))
       {
-
         goto no_dasics;
       }
         

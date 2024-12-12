@@ -133,28 +133,4 @@ static const char *_dl_map_segments (struct link_map *l, int fd,
   N_("cannot map zero-fill pages")
 
 
-extern char *trust_lib[];
-#include <stdlib.h>
-static inline int is_trust_lib(char * name)
-{
-  for (int i = 0; trust_lib[i] != NULL; i++)
-  {
-    if (!strcmp(name, trust_lib[i])) return 1;
-  } 
-  return 0;
-}
-
-static inline char * get_real_name(char * name)
-{
-    char * local_name = NULL;
-    for (int i = 0; name[i] != '\0'; i++)
-    {
-        if (name[i] == '/')
-            local_name = &name[i + 1];       
-    }
-    if (local_name == NULL)
-        local_name = name;    
-    return local_name;
-}
-
 #endif	/* dl-load.h */
