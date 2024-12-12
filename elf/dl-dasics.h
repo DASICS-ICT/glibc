@@ -11,7 +11,7 @@ extern unsigned long dasics_flag;
 extern unsigned trusted_base;
 extern char *trust_lib[];
 #include <stdlib.h>
-#include <cdefs.h>
+#include <sys/cdefs.h>
 static __always_inline char * get_real_name(char * name)
 {
     char * local_name = NULL;
