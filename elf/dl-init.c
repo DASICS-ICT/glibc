@@ -21,10 +21,11 @@
 #include <ldsodefs.h>
 #include <string.h>
 #include <elf-initfini.h>
+#include <dl-dasics.h>
 
 // dasics stage 3 should jump init main_map
-extern unsigned long dasics_flag;
 char * main_lib_linker = NULL;
+struct link_map* dasics_main_elf = NULL;
 int dasics_first_dynamic = 0;
 
 static void
@@ -44,9 +45,10 @@ call_init (struct link_map *l, int argc, char **argv, char **env)
   l->l_init_called = 1;
 
 
-  if (__glibc_unlikely(dasics_flag == 2) && l->l_addr == 0)
+  if (__glibc_unlikely(dasics_flag != NO_DASICS) &&\
+        __glibc_unlikely(dasics_flag != DASICS_MAP_TRUSTED) &&\
+          __glibc_unlikely(dasics_flag != DASICS_MAP_ALL_UNTRUSTED))
    {
-    // _dl_debug_printf ("dasics stage 2 give up main's init\n");
     return; 
    }
   
@@ -98,11 +100,12 @@ _dl_init (struct link_map *main_map, int argc, char **argv, char **env)
     }
 
   // jump preinit for main map in dasics stage 3
-  if (__glibc_unlikely(dasics_flag == 2))
+  if (__glibc_unlikely(dasics_flag != NO_DASICS) &&\
+        __glibc_unlikely(dasics_flag != DASICS_MAP_TRUSTED) &&\
+          __glibc_unlikely(dasics_flag != DASICS_MAP_ALL_UNTRUSTED))
   {
     // _dl_debug_printf ("dasics stage 2 give up main's preinit\n");
     goto jump;
-
   }
 
   /* Don't do anything if there is no preinit array.  */

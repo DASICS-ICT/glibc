@@ -29,6 +29,8 @@
 #include <libc-pointer-arith.h>
 #include "dynamic-link.h"
 
+#include <dl-dasics.h>
+
 /* Statistics function.  */
 #ifdef SHARED
 # define bump_num_cache_relocations() ++GL(dl_num_cache_relocations)
@@ -205,6 +207,7 @@ void
 _dl_relocate_object (struct link_map *l, struct r_scope_elem *scope[],
 		     int reloc_mode, int consider_profiling)
 {
+
   struct textrels
   {
     caddr_t start;
@@ -295,8 +298,10 @@ _dl_relocate_object (struct link_map *l, struct r_scope_elem *scope[],
 	  }
     }
   // dasics stage 2 don't reloc again!
-  extern unsigned long dasics_flag;
-  if (__glibc_unlikely(dasics_flag == 2) && l->l_addr == 0)
+  if (__glibc_likely(dasics_flag != NO_DASICS) &&\
+      __glibc_likely(dasics_flag != DASICS_MAP_TRUSTED) &&\
+      __glibc_likely(dasics_flag != DASICS_MAP_ALL_UNTRUSTED) &&\
+      l == dasics_main_elf)
   {
     // _dl_debug_printf ("dasics stage2 give up reloc the main map\n");
     // fill the got 1 with link_map

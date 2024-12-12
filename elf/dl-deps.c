@@ -232,15 +232,18 @@ _dl_map_object_deps (struct link_map *map,
 		args.name = name;
 		
 		// _dl_debug_printf("load lib %s\n", name);
-		extern unsigned long dasics_flag;
 
 		// if we are map a untrusted lib copy, we will give up untrusted lib
 		if (__glibc_unlikely(dasics_flag == DASICS_MAP_UNTRUSTED_COPY) || \
 			__glibc_unlikely(dasics_flag == DASICS_MAP_TRUSTED_COPY))
 		  {
+			if (dasics_main_elf == NULL)
+			{
+				_dl_debug_printf("WARN: dasics_main_elf be zero %lx\n", (unsigned long )dasics_main_elf);
+			}	
+			
 			if (!is_trust_lib(get_real_name(name)))
 			{
-				// _dl_debug_printf("stage 3: give up %s\n", name);
 				continue;
 			}
 		  }

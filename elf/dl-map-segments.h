@@ -103,13 +103,6 @@ _dl_map_segments (struct link_map *l, int fd,
       /* First, we will juege the dasics_flag, if it has been seted to 1
          we will judge whether the library's name equal to "libc.so.6"
       */
-      // Do a Test for bug
-      // if (!strcmp(get_real_name(l->l_name), "libc.so.6"))
-      //   {
-      //     trust_base = 0x80000;
-      //     goto map_trust_only;
-      //   }
-
       if (__glibc_likely(dasics_flag == NO_DASICS) || \
             __glibc_unlikely(dasics_flag == DASICS_MAP_UNTRUSTED_COPY) || \
              __glibc_unlikely(dasics_flag == DASICS_MAP_ALL_UNTRUSTED))

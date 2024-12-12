@@ -52,6 +52,7 @@
 #include <dl-execve.h>
 #include <dl-find_object.h>
 #include <dl-audit-check.h>
+#include <dl-dasics.h>
 
 #include <assert.h>
 
@@ -1604,7 +1605,8 @@ dl_main (const ElfW(Phdr) *phdr,
 
       /* Now the map for the main executable is available.  */
       main_map = GL(dl_ns)[LM_ID_BASE]._ns_loaded;
-
+      if (dasics_main_elf == NULL)
+        dasics_main_elf = main_map;
       if (__glibc_likely (state.mode == rtld_mode_normal))
 	rtld_chain_load (main_map, argv0);
 
@@ -1654,6 +1656,9 @@ dl_main (const ElfW(Phdr) *phdr,
 	 This will be what dlopen on "" returns.  */
       main_map = _dl_new_object ((char *) "", "", lt_executable, NULL,
 				 __RTLD_OPENEXEC, LM_ID_BASE);
+      // set dasics_main_elf
+      if (dasics_main_elf == NULL)
+        dasics_main_elf = main_map;
       assert (main_map != NULL);
       main_map->l_phdr = phdr;
       main_map->l_phnum = phnum;
@@ -2313,6 +2318,8 @@ dl_main (const ElfW(Phdr) *phdr,
 	/* Also allocated with the fake malloc().  */
 	l->l_free_initfini = 0;
 
+  if (dasics_main_elf == NULL)
+    dasics_main_elf = main_map;
 	if (l != &GL(dl_rtld_map))
 	  _dl_relocate_object (l, l->l_scope, GLRO(dl_lazy) ? RTLD_LAZY : 0,
 			       consider_profiling);

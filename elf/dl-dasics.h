@@ -1,8 +1,10 @@
 #ifndef __INCLUDE_DASICS_H
 #define __INCLUDE_DASICS_H
-
+#include <stdlib.h>
+#include <sys/cdefs.h>
+#include <link.h>
 #define NO_DASICS                   0   // No DASICS config 
-#define DASICS_MAPP_TRUSTED         1   // Trusted library in trusted
+#define DASICS_MAP_TRUSTED          1   // Trusted library in trusted
 #define DASICS_MAP_UNTRUSTED_COPY   2   // Trusted library copy in untrusted
 #define DASICS_MAP_ALL_UNTRUSTED    3   // All library in untrusted
 #define DASICS_MAP_TRUSTED_COPY     4   // Trusted library in untrusted area will be copyed to trusted area
@@ -10,8 +12,10 @@
 extern unsigned long dasics_flag;
 extern unsigned trusted_base;
 extern char *trust_lib[];
-#include <stdlib.h>
-#include <sys/cdefs.h>
+
+// main elf
+extern struct link_map* dasics_main_elf;
+
 static __always_inline char * get_real_name(char * name)
 {
     char * local_name = NULL;

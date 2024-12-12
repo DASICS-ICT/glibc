@@ -21,8 +21,8 @@
 #include <libc-early-init.h>
 #include <link.h>
 #include <stddef.h>
+#include <dl-dasics.h>
 
-extern unsigned long dasics_flag;
 void
 _dl_call_libc_early_init (struct link_map *libc_map, _Bool initial)
 {
@@ -31,7 +31,9 @@ _dl_call_libc_early_init (struct link_map *libc_map, _Bool initial)
     return;
 
   // DASICS never do __libc_early_init again
-  if (dasics_flag != 0 && dasics_flag != 1) return;
+  if (dasics_flag != NO_DASICS && \
+        dasics_flag != DASICS_MAP_TRUSTED && \
+          dasics_flag != DASICS_MAP_ALL_UNTRUSTED) return;
   const ElfW(Sym) *sym
     = _dl_lookup_direct (libc_map, "__libc_early_init",
                          0x069682ac, /* dl_new_hash output.  */
