@@ -129,6 +129,8 @@ no_dasics:
       /* Remember which part of the address space this object uses.  */
       l->l_map_start = _dl_map_segment (c, mappref, maplength, fd);
 
+do_dasics:
+
       if (__glibc_unlikely ((void *) l->l_map_start == MAP_FAILED))
         return DL_MAP_SEGMENTS_ERROR_MAP_SEGMENT;
 
