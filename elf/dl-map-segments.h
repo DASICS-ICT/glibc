@@ -100,8 +100,8 @@ _dl_map_segments (struct link_map *l, int fd,
         = (ELF_PREFERRED_ADDRESS (loader, maplength, c->mapstart)
            - MAP_BASE_ADDR (l));
       
-      /* First, we will juege the dasics_flag, if it has been seted to 1
-         we will judge whether the library's name equal to "libc.so.6"
+      /* First, we will juege the dasics_flag, if we want to put some libraries
+         in trust and some libraries in untrusted, goto is_trust_lib().
       */
       if (__glibc_likely(dasics_flag == NO_DASICS) || \
             __glibc_unlikely(dasics_flag == DASICS_MAP_UNTRUSTED_COPY) || \
@@ -128,7 +128,6 @@ map_trust_only:
 no_dasics:
       /* Remember which part of the address space this object uses.  */
       l->l_map_start = _dl_map_segment (c, mappref, maplength, fd);
-do_dasics:
 
       if (__glibc_unlikely ((void *) l->l_map_start == MAP_FAILED))
         return DL_MAP_SEGMENTS_ERROR_MAP_SEGMENT;
