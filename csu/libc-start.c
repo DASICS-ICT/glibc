@@ -197,7 +197,8 @@ call_fini (void *unused)
 {
   size_t i = __fini_array_end - __fini_array_start;
   while (i-- > 0)
-    (*__fini_array_start [i]) ();
+    // (*__fini_array_start [i]) ();
+    lib_call(*__fini_array_start [i]);
 
 # if ELF_INITFINI
   _fini ();
