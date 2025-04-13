@@ -38,7 +38,7 @@
 #include <shlib-compat.h>
 
 #include <elf/dl-tunables.h>
-
+extern void lib_call(void * func, ...);
 extern void __libc_init_first (int argc, char **argv, char **envp);
 
 #include <tls.h>
@@ -177,7 +177,8 @@ call_init (int argc, char **argv, char **envp)
     const size_t size = __preinit_array_end - __preinit_array_start;
     size_t i;
     for (i = 0; i < size; i++)
-      (*__preinit_array_start [i]) (argc, argv, envp);
+      // (*__preinit_array_start [i]) (argc, argv, envp);
+      lib_call(*__preinit_array_start [i], argc, argv, envp);
   }
 
 # if ELF_INITFINI
@@ -186,7 +187,8 @@ call_init (int argc, char **argv, char **envp)
 
   const size_t size = __init_array_end - __init_array_start;
   for (size_t i = 0; i < size; i++)
-      (*__init_array_start [i]) (argc, argv, envp);
+      // (*__init_array_start [i]) (argc, argv, envp);
+      lib_call(*__init_array_start [i], argc, argv, envp);
 }
 
 /* Likewise for the destructor.  */

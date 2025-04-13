@@ -50,6 +50,7 @@ headers := \
   # headers
 
 routines := \
+  dasics_lib_call \
   a64l \
   abort \
   abs \

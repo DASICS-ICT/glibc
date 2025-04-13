@@ -24,7 +24,7 @@
 
 #include "set-hooks.h"
 DEFINE_HOOK (__libc_atexit, (void))
-
+extern void lib_call(void * func, ...);
 /* Initialize the flag that indicates exit function processing
    is complete. See concurrency notes in stdlib/exit.h where
    __exit_funcs_lock is declared.  */
@@ -129,9 +129,17 @@ __run_exit_handlers (int status, struct exit_function_list **listp,
     }
 
   __libc_lock_unlock (__exit_funcs_lock);
-
+  
   if (run_list_atexit)
-    RUN_HOOK (__libc_atexit, ());
+  {
+	void *const *ptr; 
+	for (ptr = (void *const *) ((void *const *) (&__start___libc_atexit)); ! ((ptr) >= (void *const *) &__stop___libc_atexit); ++ptr) 
+		// (*(____libc_atexit_hook_function_t *) *ptr) ();
+		lib_call((*(____libc_atexit_hook_function_t *) *ptr));
+  }
+  // RUN_HOOK (__libc_atexit, ());
+
+
 
   _exit (status);
 }
