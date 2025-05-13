@@ -2951,7 +2951,7 @@ sysmalloc (INTERNAL_SIZE_T nb, mstate av)
       check_malloced_chunk (av, p, nb);
       return chunk2mem (p);
     }
-
+ 
   /* catch all failure paths */
   __set_errno (ENOMEM);
   return 0;

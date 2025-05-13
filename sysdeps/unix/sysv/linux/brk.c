@@ -23,7 +23,7 @@
 
 /* This must be initialized data because commons can't have aliases.  */
 void *__curbrk = 0;
-
+void *copy____curbrk = NULL;
 #if HAVE_INTERNAL_BRK_ADDR_SYMBOL
 /* Old braindamage in GCC's crtstuff.c requires this symbol in an attempt
    to work around different old braindamage in the old Linux ELF dynamic
@@ -35,6 +35,7 @@ int
 __brk (void *addr)
 {
   __curbrk = __brk_call (addr);
+  *(unsigned long *) copy____curbrk = (unsigned long) __curbrk;
   if (__curbrk < addr)
     {
       __set_errno (ENOMEM);
