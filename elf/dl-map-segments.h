@@ -24,7 +24,8 @@
    between them small enough that it's preferable to reserve all whole
    pages inside the gaps with PROT_NONE mappings rather than permitting
    other use of those parts of the address space).  */
-
+extern unsigned long dasics_flag;
+extern unsigned long trust_base;
 static __always_inline const char *
 _dl_map_segments (struct link_map *l, int fd,
                   const ElfW(Ehdr) *header, int type,
@@ -51,12 +52,44 @@ _dl_map_segments (struct link_map *l, int fd,
         = (ELF_PREFERRED_ADDRESS (loader, maplength,
                                   c->mapstart & GLRO(dl_use_load_bias))
            - MAP_BASE_ADDR (l));
+      
+      /* First, we will juege the dasics_flag, if it has been seted to 1
+         we will judge whether the library's name equal to "libc.so.6"
+      */
+      if (__glibc_likely(dasics_flag == 0))
+        goto no_dasics;
+      
+      if (__glibc_unlikely(dasics_flag == 2))
+        goto no_dasics;      
 
+      // /* We will add dasics logic here */
+      // char * name = 0;
+      // for (int i = 0; l->l_name[i] != '\0'; i++)
+      // {
+      //   if (l->l_name[i]=='/')
+      //     name = &l->l_name[i + 1];
+      // }
+      // if (name == 0)
+      //   name = l->l_name;
+      
+      if (is_trust_lib(get_real_name(l->l_name)))
+      {
+        l->l_map_start = (ElfW(Addr)) __mmap (trust_base, maplength,
+                                              c->prot,
+                                              MAP_FIXED| MAP_COPY|MAP_FILE,
+                                              fd, c->mapoff);   
+        trust_base += ALIGN_UP(maplength, GLRO(dl_pagesize));
+        goto do_dasics;     
+      }
+
+
+no_dasics:
       /* Remember which part of the address space this object uses.  */
       l->l_map_start = (ElfW(Addr)) __mmap ((void *) mappref, maplength,
                                             c->prot,
                                             MAP_COPY|MAP_FILE,
                                             fd, c->mapoff);
+do_dasics:
       if (__glibc_unlikely ((void *) l->l_map_start == MAP_FAILED))
         return DL_MAP_SEGMENTS_ERROR_MAP_SEGMENT;
 

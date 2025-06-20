@@ -30,6 +30,8 @@
 #include <scratch_buffer.h>
 
 #include <dl-dst.h>
+#include <dl-load.h>
+
 
 /* Whether an shared object references one or more auxiliary objects
    is signaled by the AUXTAG entry in l_info.  */
@@ -244,6 +246,19 @@ _dl_map_object_deps (struct link_map *map,
 		name = expand_dst (l, strtab + d->d_un.d_val, 0);
 		/* Store the tag in the argument structure.  */
 		args.name = name;
+
+		// _dl_debug_printf("load lib %s\n", name);
+		extern unsigned long dasics_flag;
+
+		// if we are map a untrusted lib copy, we will give up untrusted lib
+		if (__glibc_unlikely(dasics_flag == 2))
+		  {
+			if (!is_trust_lib(get_real_name(name)))
+			{
+				// _dl_debug_printf("stage 3: give up %s\n", name);
+				continue;
+			}
+		  }
 
 		int err = _dl_catch_exception (&exception, openaux, &args);
 		if (__glibc_unlikely (exception.errstring != NULL))

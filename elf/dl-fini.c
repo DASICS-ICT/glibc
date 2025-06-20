@@ -23,7 +23,8 @@
 
 /* Type of the constructor functions.  */
 typedef void (*fini_t) (void);
-
+// dasics stage3 should jump fini
+extern unsigned long dasics_flag;
 
 void
 _dl_fini (void)
@@ -114,6 +115,13 @@ _dl_fini (void)
 		{
 		  /* Make sure nothing happens if we are called twice.  */
 		  l->l_init_called = 0;
+		  
+		  // dasics stage 3 jump fini for main_map
+		  if (__glibc_unlikely(dasics_flag == 2) && l->l_addr == 0)
+		   {
+			// _dl_debug_printf ("dasics final fini give up main's fini\n");
+			goto jump;
+		   }	
 
 		  /* Is there a destructor function?  */
 		  if (l->l_info[DT_FINI_ARRAY] != NULL
@@ -144,6 +152,7 @@ _dl_fini (void)
 			  (l, l->l_addr + l->l_info[DT_FINI]->d_un.d_ptr);
 		    }
 
+jump:
 #ifdef SHARED
 		  /* Auditing checkpoint: another object closed.  */
 		  if (!do_audit && __builtin_expect (GLRO(dl_naudit) > 0, 0))

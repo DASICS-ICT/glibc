@@ -218,7 +218,19 @@ _dl_relocate_object (struct link_map *l, struct r_scope_elem *scope[],
 	    newp->next = textrels;
 	    textrels = newp;
 	  }
+
     }
+  // dasics stage 2 don't reloc again!
+  extern unsigned long dasics_flag;
+  if (__glibc_unlikely(dasics_flag == 2) && l->l_addr == 0)
+  {
+    // _dl_debug_printf ("dasics stage2 give up reloc the main map\n");
+    // fill the got 1 with link_map
+    unsigned long * got = (const unsigned long *) D_PTR (l, l_info[DT_PLTGOT]);
+    if (got)
+      got[1] = (unsigned long)l;
+    goto jump;
+  }    
 
   {
     /* Do the actual relocation of the object's GOT and other data.  */
@@ -278,6 +290,7 @@ _dl_relocate_object (struct link_map *l, struct r_scope_elem *scope[],
 #endif
   }
 
+jump:
   /* Mark the object so we know this work has been done.  */
   l->l_relocated = 1;
 

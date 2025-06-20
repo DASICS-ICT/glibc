@@ -47,6 +47,8 @@
 #include <dl-tunables.h>
 #include <dl-auxv.h>
 
+// WH add
+#include <dl-load.h>
 extern char **_environ attribute_hidden;
 extern char _end[] attribute_hidden;
 
@@ -82,6 +84,10 @@ void *_dl_random attribute_relro = NULL;
 # define DL_STACK_END(cookie) ((void *) (cookie))
 #endif
 
+// this is dasics flag, when we check AT_DASICS on the auxv, set to 1
+extern unsigned long dasics_flag;
+extern unsigned long trust_base;
+
 ElfW(Addr)
 _dl_sysdep_start (void **start_argptr,
 		  void (*dl_main) (const ElfW(Phdr) *phdr, ElfW(Word) phnum,
@@ -116,6 +122,11 @@ _dl_sysdep_start (void **start_argptr,
 
   user_entry = (ElfW(Addr)) ENTRY_POINT;
   GLRO(dl_platform) = NULL; /* Default to nothing known about the platform.  */
+// WH add for pass _dl_fixup to programer
+#define AT_FIXUP 56
+#define AT_DASICS 57
+// Linux pass trusted base to linker
+#define AT_TRUST_BASE 59
 
   for (av = GLRO(dl_auxv); av->a_type != AT_NULL; set_seen (av++))
     switch (av->a_type)
@@ -126,6 +137,19 @@ _dl_sysdep_start (void **start_argptr,
       case AT_PHNUM:
 	phnum = av->a_un.a_val;
 	break;
+      case AT_FIXUP:
+  av->a_un.a_val = (unsigned long)_dl_fixup;
+  break;
+      case AT_DASICS:
+  {
+    dasics_flag = av->a_un.a_val;
+  }
+  break;  
+      case AT_TRUST_BASE:
+  {
+    trust_base = av->a_un.a_val;
+  }
+  break;  
       case AT_PAGESZ:
 	GLRO(dl_pagesize) = av->a_un.a_val;
 	break;

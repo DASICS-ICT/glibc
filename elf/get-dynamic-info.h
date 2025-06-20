@@ -73,6 +73,19 @@ elf_get_dynamic_info (struct link_map *l, ElfW(Dyn) *temp)
 	     + DT_VERSIONTAGNUM + DT_EXTRANUM + DT_VALNUM] = dyn;
       ++dyn;
     }
+    
+  /* fill the l->_plt_begin */
+  if (info[DT_PLTGOT])
+    {
+      /* The third place will be the plt_begin */
+      l->l_plt_begin = ((unsigned long *)(info[DT_PLTGOT]->d_un.d_ptr + l->l_addr))[2];
+    } 
+  else 
+    {
+      /* The plt begin will be zero */
+      l->l_plt_begin = 0;
+    } 
+
 
 #define DL_RO_DYN_TEMP_CNT	8
 

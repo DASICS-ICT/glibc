@@ -74,6 +74,8 @@ struct filebuf
 #include <not-cancel.h>
 
 #include <endian.h>
+#include <dl-machine.h>
+
 #if BYTE_ORDER == BIG_ENDIAN
 # define byteorder ELFDATA2MSB
 #elif BYTE_ORDER == LITTLE_ENDIAN
@@ -95,7 +97,41 @@ int __stack_prot attribute_hidden attribute_relro
   = 0;
 #endif
 
-
+// this is dasics flag, when we check AT_DASICS on the auxv, set to other vaule
+unsigned long dasics_flag = 0;
+// trust base
+unsigned long trust_base = 0;
+char *trust_lib[] = 
+{
+	LD_SONOD,
+	LD_SO,
+    LIBANL_SO,                       
+    LIBBROKENLOCALE_SO,             
+    LIBCRYPT_SO,                   
+    LIBC_SO,                         
+    LIBDL_SO,                   
+    LIBGCC_S_SO,                   
+    LIBMVEC_SO,                  
+    LIBM_SO,                         
+    LIBNSL_SO,                     
+    LIBNSS_COMPAT_SO,           
+    LIBNSS_DB_SO,                  
+    LIBNSS_DNS_SO,                
+    LIBNSS_FILES_SO,                 
+    LIBNSS_HESIOD_SO,                
+    LIBNSS_LDAP_SO,                 
+    LIBNSS_NISPLUS_SO,             
+    LIBNSS_NIS_SO,                 
+    LIBNSS_TEST1_SO,               
+    LIBNSS_TEST2_SO,               
+    LIBPTHREAD_SO,                  
+    LIBRESOLV_SO,                     
+    LIBRT_SO,                     
+    LIBTHREAD_DB_SO,             
+    LIBUTIL_SO, 
+	LIBLIBZ_SO,              
+    NULL
+};
 /* This is the decomposed LD_LIBRARY_PATH search path.  */
 static struct r_search_path_struct env_path_list attribute_relro;
 

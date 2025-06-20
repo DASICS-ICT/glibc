@@ -133,6 +133,15 @@ struct link_map
     ElfW(Half) l_phnum;		/* Number of program header entries.  */
     ElfW(Half) l_ldnum;		/* Number of dynamic segment entries.  */
 
+
+    /* Start and finish of memory map for this object.  l_map_start
+       need not be the same as l_addr.  */
+    ElfW(Addr) l_map_start, l_map_end;
+    /* End of the executable part of the mapping.  */
+    ElfW(Addr) l_text_end;
+    /* The plt_begin */
+    ElfW(Addr) l_plt_begin;
+
     /* Array of DT_NEEDED dependencies and their dependencies, in
        dependency order for symbol lookup (with and without
        duplicates).  There is no entry before the dependencies have
@@ -239,11 +248,11 @@ struct link_map
     /* String specifying the path where this object was found.  */
     const char *l_origin;
 
-    /* Start and finish of memory map for this object.  l_map_start
-       need not be the same as l_addr.  */
-    ElfW(Addr) l_map_start, l_map_end;
-    /* End of the executable part of the mapping.  */
-    ElfW(Addr) l_text_end;
+   //  /* Start and finish of memory map for this object.  l_map_start
+   //     need not be the same as l_addr.  */
+   //  ElfW(Addr) l_map_start, l_map_end;
+   //  /* End of the executable part of the mapping.  */
+   //  ElfW(Addr) l_text_end;
 
     /* Default array for 'l_scope'.  */
     struct r_scope_elem *l_scope_mem[4];
