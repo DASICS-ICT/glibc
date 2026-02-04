@@ -33,50 +33,59 @@
 
 /* Defined in brk.c.  */
 extern void *__curbrk;
+extern uint64_t *je_hmtt_mmap_base;
 
 void *
 _dl_early_allocate (size_t size)
 {
   void *result;
 
-  if (__curbrk != NULL)
-    /* If the break has been initialized, brk must have run before,
-       so just call it once more.  */
-    {
-      result = __sbrk (size);
-      if (result == (void *) -1)
-        result = NULL;
-    }
-  else
-    {
-      /* If brk has not been invoked, there is no need to update
-         __curbrk.  The first call to brk will take care of that.  */
-      void *previous = __brk_call (0);
-      result = __brk_call (previous + size);
-      if (result == previous)
-        result = NULL;
-      else
-        result = previous;
-    }
+//   if (__curbrk != NULL)
+//     /* If the break has been initialized, brk must have run before,
+//        so just call it once more.  */
+//     {
+//       result = __sbrk (size);
+//       if (result == (void *) -1)
+//         result = NULL;
+//     }
+//   else
+//     {
+//       /* If brk has not been invoked, there is no need to update
+//          __curbrk.  The first call to brk will take care of that.  */
+//       void *previous = __brk_call (0);
+//       result = __brk_call (previous + size);
+//       if (result == previous)
+//         result = NULL;
+//       else
+//         result = previous;
+//     }
 
-  /* If brk fails, fall back to mmap.  This can happen due to
-     unfortunate ASLR layout decisions and kernel bugs, particularly
-     for static PIE.  */
-  if (result == NULL)
-    {
-      long int ret;
-      int prot = PROT_READ | PROT_WRITE;
-      int flags = MAP_PRIVATE | MAP_ANONYMOUS;
-#ifdef __NR_mmap2
-      ret = MMAP_CALL_INTERNAL (mmap2, 0, size, prot, flags, -1, 0);
-#else
-      ret = MMAP_CALL_INTERNAL (mmap, 0, size, prot, flags, -1, 0);
-#endif
-      if (INTERNAL_SYSCALL_ERROR_P (ret))
-        result = NULL;
-      else
-        result = (void *) ret;
-    }
-
+//   /* If brk fails, fall back to mmap.  This can happen due to
+//      unfortunate ASLR layout decisions and kernel bugs, particularly
+//      for static PIE.  */
+//   if (result == NULL)
+//     {
+//       long int ret;
+//       int prot = PROT_READ | PROT_WRITE;
+//       int flags = MAP_PRIVATE | MAP_ANONYMOUS;
+// #ifdef __NR_mmap2
+//       ret = MMAP_CALL_INTERNAL (mmap2, 0, size, prot, flags, -1, 0);
+// #else
+//       ret = MMAP_CALL_INTERNAL (mmap, 0, size, prot, flags, -1, 0);
+// #endif
+//       if (INTERNAL_SYSCALL_ERROR_P (ret))
+//         result = NULL;
+//       else
+//         result = (void *) ret;
+//     }
+#define PAGE_SIZE 4096
+	if (je_hmtt_mmap_base == NULL)
+	{
+		extern uint64_t _end;
+		uint64_t base = (uint64_t)&_end;
+		je_hmtt_mmap_base = (base & ~(PAGE_SIZE - 1)) + PAGE_SIZE;
+	}
+  result = je_hmtt_mmap_base;
+  je_hmtt_mmap_base = (void *)((uintptr_t)je_hmtt_mmap_base + size);
   return result;
 }

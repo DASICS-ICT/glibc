@@ -36,7 +36,7 @@ __clock_gettime64 (clockid_t clock_id, struct __timespec64 *tp)
 
 #ifdef HAVE_CLOCK_GETTIME64_VSYSCALL
   int (*vdso_time64) (clockid_t clock_id, struct __timespec64 *tp)
-    = GLRO(dl_vdso_clock_gettime64);
+    = NULL;//GLRO(dl_vdso_clock_gettime64);
   if (vdso_time64 != NULL)
     {
       r = INTERNAL_VSYSCALL_CALL (vdso_time64, 2, clock_id, tp);
@@ -48,7 +48,7 @@ __clock_gettime64 (clockid_t clock_id, struct __timespec64 *tp)
 
 #ifdef HAVE_CLOCK_GETTIME_VSYSCALL
   int (*vdso_time) (clockid_t clock_id, struct timespec *tp)
-    = GLRO(dl_vdso_clock_gettime);
+    = NULL;//GLRO(dl_vdso_clock_gettime);
   if (vdso_time != NULL)
     {
       struct timespec tp32;
