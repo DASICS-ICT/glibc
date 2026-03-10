@@ -186,6 +186,7 @@ extern char *trust_lib[];
 #define LIBLIBZ_SO                      "libz.so.1.3"
 #define LIBLIBZ_SO_1                    "libz.so.1"
 #define LIBSTDCLC_SO                    "libstdc++.so.6"
+#define LIBMIMALLOC_SO                  "libmimalloc.so.2"
 
 #endif /* !dl_machine_h */
 

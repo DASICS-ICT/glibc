@@ -134,7 +134,8 @@ char *trust_lib[] =
   LIBUTIL_SO, 
 	LIBLIBZ_SO,
   LIBLIBZ_SO_1, 
-  LIBSTDCLC_SO,         
+  LIBSTDCLC_SO,
+  LIBMIMALLOC_SO,  
   NULL
 };
 
