@@ -78,6 +78,7 @@ struct filebuf
 
 #include <endian.h>
 #include <dl-machine.h>
+#include <dl-dasics.h>
 
 #if BYTE_ORDER == BIG_ENDIAN
 # define byteorder ELFDATA2MSB
@@ -104,40 +105,106 @@ int __stack_prot attribute_hidden attribute_relro
 unsigned long dasics_flag = 0;
 // trust base
 unsigned long trust_base = 0;
-char *trust_lib[] = 
+char dasics_untrusted_libs[DASICS_MAX_UNTRUSTED_LIBS][DASICS_MAX_LIBRARY_NAME];
+unsigned int dasics_untrusted_lib_count = 0;
+
+static bool
+dasics_valid_library_name (const char *name, size_t len)
 {
-	LD_SONOD,
-	LD_SO,
-  LIBANL_SO,                       
-  LIBBROKENLOCALE_SO,             
-  LIBCRYPT_SO,                   
-  LIBC_SO,                         
-  LIBDL_SO,                   
-  LIBGCC_S_SO,                   
-  LIBMVEC_SO,                  
-  LIBM_SO,                         
-  LIBNSL_SO,                     
-  LIBNSS_COMPAT_SO,           
-  LIBNSS_DB_SO,                  
-  LIBNSS_DNS_SO,                
-  LIBNSS_FILES_SO,                 
-  LIBNSS_HESIOD_SO,                
-  LIBNSS_LDAP_SO,                 
-  LIBNSS_NISPLUS_SO,             
-  LIBNSS_NIS_SO,                 
-  LIBNSS_TEST1_SO,               
-  LIBNSS_TEST2_SO,               
-  LIBPTHREAD_SO,                  
-  LIBRESOLV_SO,                     
-  LIBRT_SO,                     
-  LIBTHREAD_DB_SO,             
-  LIBUTIL_SO, 
-	LIBLIBZ_SO,
-  LIBLIBZ_SO_1, 
-  LIBSTDCLC_SO,
-  LIBMIMALLOC_SO,  
-  NULL
-};
+  if (len == 0 || len >= DASICS_MAX_LIBRARY_NAME)
+    return false;
+
+  for (size_t i = 0; i < len; i++)
+    {
+      char c = name[i];
+      bool valid = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
+		   || (c >= '0' && c <= '9') || c == '_' || c == '+'
+		   || c == '.' || c == '-';
+      if (!valid)
+	return false;
+    }
+
+  return true;
+}
+
+int
+dasics_register_untrusted_lib (const char *name, size_t len)
+{
+  if (!dasics_valid_library_name (name, len))
+    _dl_fatal_printf ("DASICS: invalid untrusted_library note entry\n");
+
+  for (unsigned int i = 0; i < dasics_untrusted_lib_count; i++)
+    if (strlen (dasics_untrusted_libs[i]) == len
+	&& memcmp (dasics_untrusted_libs[i], name, len) == 0)
+      return 0;
+
+  if (dasics_untrusted_lib_count >= DASICS_MAX_UNTRUSTED_LIBS)
+    _dl_fatal_printf ("DASICS: too many untrusted_library note entries\n");
+
+  memcpy (dasics_untrusted_libs[dasics_untrusted_lib_count], name, len);
+  dasics_untrusted_libs[dasics_untrusted_lib_count][len] = '\0';
+  dasics_untrusted_lib_count++;
+  return 0;
+}
+
+static size_t
+dasics_note_align (size_t value)
+{
+  return (value + 3) & ~(size_t) 3;
+}
+
+void
+dasics_parse_untrusted_library_notes (struct link_map *main_map)
+{
+  if (dasics_flag == NO_DASICS || main_map == NULL)
+    return;
+
+  for (ElfW(Half) i = 0; i < main_map->l_phnum; i++)
+    {
+      const ElfW(Phdr) *ph = &main_map->l_phdr[i];
+      if (ph->p_type != PT_NOTE)
+	continue;
+
+      const char *p = (const char *) (main_map->l_addr + ph->p_vaddr);
+      const char *end = p + ph->p_memsz;
+
+      while (p + sizeof (ElfW(Nhdr)) <= end)
+	{
+	  const ElfW(Nhdr) *nhdr = (const ElfW(Nhdr) *) p;
+	  p += sizeof (ElfW(Nhdr));
+
+	  size_t namesz = nhdr->n_namesz;
+	  size_t descsz = nhdr->n_descsz;
+	  size_t name_aligned = dasics_note_align (namesz);
+	  size_t desc_aligned = dasics_note_align (descsz);
+
+	  if ((size_t) (end - p) < name_aligned)
+	    break;
+	  const char *note_name = p;
+	  p += name_aligned;
+
+	  if ((size_t) (end - p) < desc_aligned)
+	    break;
+	  const char *desc = p;
+	  p += desc_aligned;
+
+	  if (nhdr->n_type != NT_DASICS_UNTRUSTED_LIBRARY
+	      || namesz != sizeof (DASICS_NOTE_NAME)
+	      || memcmp (note_name, DASICS_NOTE_NAME,
+			 sizeof (DASICS_NOTE_NAME)) != 0)
+	    continue;
+
+	  if (descsz == 0 || desc[descsz - 1] != '\0')
+	    _dl_fatal_printf ("DASICS: malformed untrusted_library note\n");
+
+	  size_t len = strnlen (desc, descsz);
+	  if (len + 1 != descsz)
+	    _dl_fatal_printf ("DASICS: malformed untrusted_library note\n");
+
+	  dasics_register_untrusted_lib (desc, len);
+	}
+    }
+}
 
 /* This is the decomposed LD_LIBRARY_PATH search path.  */
 struct r_search_path_struct __rtld_env_path_list attribute_relro;

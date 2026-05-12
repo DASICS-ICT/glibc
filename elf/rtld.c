@@ -1689,6 +1689,7 @@ dl_main (const ElfW(Phdr) *phdr,
     }
 
   bool has_interp = rtld_setup_main_map (main_map);
+  dasics_parse_untrusted_library_notes (main_map);
 
   /* If the current libname is different from the SONAME, add the
      latter as well.  */
